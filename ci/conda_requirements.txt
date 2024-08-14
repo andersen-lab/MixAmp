@@ -1,5 +1,6 @@
 Bio
 regex
+numpy
 pandas
 click
 wgsim

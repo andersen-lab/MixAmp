@@ -34,6 +34,6 @@ setup(
     },
     install_requires=[
         "click", "pandas", "biopython",
-        "regex", "wgsim"
+        "regex", "wgsim", "numpy"
         ]
 )
