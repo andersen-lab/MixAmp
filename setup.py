@@ -15,7 +15,7 @@ description = ("Amplicon read simualtor")
 
 
 setup(
-    name="amp-seq-sim",
+    name="mixamp",
     version="2024.08",
     packages=find_packages(include=['pywgsim*']),
     author="Maryam Ahmadi Jeshvaghane",
@@ -27,7 +27,7 @@ setup(
     long_description_content_type='text/markdown',
     entry_points='''
         [console_scripts]
-        mixamp=amp_seq_sim._cli:cli
+        mixamp=mixamp._cli:cli
         ''',
     package_data={
         'amp-seq-sim': ['data/*', ],
