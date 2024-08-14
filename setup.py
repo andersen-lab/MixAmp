@@ -21,7 +21,7 @@ setup(
     author="Maryam Ahmadi Jeshvaghane",
     license='BSD 2-Clause',
     author_email="mahmadi@scripps.edu",
-    url="https://github.com/mariaelf97/Amp-seq-sim",
+    url="https://github.com/mariaelf97/mixamp",
     description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -30,7 +30,7 @@ setup(
         mixamp=mixamp._cli:cli
         ''',
     package_data={
-        'amp-seq-sim': ['data/*', ],
+        'mixamp': ['data/*', ],
     },
     install_requires=[
         "click", "pandas", "biopython",
