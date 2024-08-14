@@ -25,11 +25,10 @@ setup(
     description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    entry_points={
-        'console_scripts': [
-            'amp-seq-sim=amp_seq_sim._cli:cli',  # Use underscores here
-        ],
-    },
+    entry_points='''
+        [console_scripts]
+        mixamp=amp_seq_sim._cli:cli
+        ''',
     package_data={
         'amp-seq-sim': ['data/*', ],
     },

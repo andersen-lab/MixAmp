@@ -2,6 +2,7 @@ import os
 
 from Bio import SeqIO
 import click
+from tqdm import tqdm
 
 @click.group(context_settings={'show_default': True})
 @click.version_option('1.0.0')
@@ -40,7 +41,7 @@ def cli():
 def simulate_proportions(genomes,proportions,primers,outdir,read_length,
                                error_rate, mutation_rate,outerdistance,
                                readcnt,indel_fraction, indel_extend_probability):
-    from utils import (preprocess_primers,
+    from mixamp.utils import (preprocess_primers,
                        create_valid_primer_combinations,
                        make_amplicon,write_fasta_group,
                        run_wgsim_on_fasta,merge_fastq_files,
@@ -105,12 +106,14 @@ def simulate_proportions(genomes,proportions,primers,outdir,read_length,
         # Iterate over all files in the directory
         if not os.path.exists(os.path.join(outdir,name,"reads")):
             os.makedirs(os.path.join(outdir,name,"reads"))
-        for filename in os.listdir(os.path.join(outdir, name, "amplicons")):
-            if filename.endswith(".fasta") or filename.endswith(".fa"):
-                fasta_file = os.path.join(outdir, name, "amplicons",filename)
+        fasta_files = [os.path.join(outdir, name, "amplicons", f) for f in os.listdir(os.path.join(outdir, name, "amplicons")) if f.endswith(".fasta") or f.endswith(".fa")]
+        # Use tqdm to track progress
+        with tqdm(total=len(fasta_files), desc="Processing FASTA files") as pbar:
+            for fasta_file in fasta_files:
                 run_wgsim_on_fasta(fasta_file, os.path.join(outdir, name, "reads"),read_length,
-                               error_rate, mutation_rate,outerdistance,
-                               readcnt,indel_fraction, indel_extend_probability)
+                        error_rate, mutation_rate,outerdistance,
+                        readcnt,indel_fraction, indel_extend_probability)
+                pbar.update(1)
         # create paths to merge all reads after simualtion
         read_path = os.path.join(os.path.abspath(outdir),name,"reads/merged_reads.fastq")
         output_path = os.path.join(os.path.abspath(os.path.abspath(outdir)),"reads.fastq")

@@ -9,6 +9,8 @@ import pandas as pd
 import os
 import itertools
 import numpy as np
+from tqdm import tqdm
+
 
 def generate_random_values(N):
     # Generate N random values
@@ -75,6 +77,8 @@ def preprocess_primers(primer_file):
     return df
     
     
+
+
 def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability):
     """Runs wgsim on a single FASTA file with the given parameters."""
     output_prefix = os.path.splitext(os.path.basename(fasta_file))[0]
@@ -97,11 +101,13 @@ def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation
         output2
     ]
 
-    subprocess.run(command, check=True)
-    print(f"wgsim completed for {fasta_file}")
+    subprocess.run(command, check=True,capture_output = True,
+    text = True)
     command = f'cat "{output1}" >> "{merged_output}"'
     subprocess.call(command, shell=True)
     
+
+
 
 def find_closest_primer_match(pattern,reference_seq):
     """function to find a string allowing up to 1 mismatches"""
@@ -160,7 +166,6 @@ def write_fasta_group(group, amplicon_number, output_dir):
 
     if filtered_records:
         SeqIO.write(filtered_records, fasta_filename, 'fasta')
-        print(f"Written {fasta_filename}")
     else:
         print(f"No valid sequences for amplicon {amplicon_number}, no file written.\
              please checkout the amplicon_stats.csv file for more information.")
