@@ -17,7 +17,7 @@ description = ("Amplicon read simualtor")
 setup(
     name="amp-seq-sim",
     version="2024.08",
-    packages=find_packages(),
+    packages=find_packages(include=['pywgsim*']),
     author="Maryam Ahmadi Jeshvaghane",
     license='BSD 2-Clause',
     author_email="mahmadi@scripps.edu",
@@ -25,15 +25,16 @@ setup(
     description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    entry_points='''
-        [console_scripts]
-        amp-seq-sim=Amp.seq.sim._cli:cli
-        ''',
+    entry_points={
+        'console_scripts': [
+            'amp-seq-sim=amp_seq_sim._cli:cli',  # Use underscores here
+        ],
+    },
     package_data={
         'amp-seq-sim': ['data/*', ],
     },
     install_requires=[
         "click", "pandas", "biopython",
-        "regex", "wgsim", "numpy"
+        "regex", "numpy"
         ]
 )
