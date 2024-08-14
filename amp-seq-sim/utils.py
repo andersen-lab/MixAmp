@@ -8,6 +8,17 @@ import argparse
 import pandas as pd
 import os
 import itertools
+import numpy as np
+
+def generate_random_values(N):
+    # Generate N random values
+    random_values = np.random.rand(N)
+    
+    # Normalize the values so that they sum to 1
+    normalized_values = random_values / np.sum(random_values)
+    
+    # Convert the numpy array to a list
+    return normalized_values.tolist()
 
 def merge_fastq_files(fastq_file, output_file):
     """

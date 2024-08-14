@@ -2,8 +2,6 @@ import os
 
 from Bio import SeqIO
 import click
-import pandas as pd
-
 
 @click.group(context_settings={'show_default': True})
 @click.version_option('1.0.0')
@@ -13,9 +11,10 @@ def cli():
 @cli.command()
 @click.argument('genomes',type=str)
 @click.argument('primers', type=click.Path(exists=True))
-@click.option('--proportions', default=1.0,
+@click.option('--proportions', default="NA",
               help='Read proportions for each sample, e.g.(0.8,0.2)\
-                  must sum to 1.0', type = str)
+                  must sum to 1.0, if not provided, program will\
+                      randomly assign proportions', type = str)
 @click.option('--outdir', default='results',
               help='Output directory',
               type=click.Path(exists=False), show_default=True)
@@ -45,11 +44,26 @@ def simulate_proportions(genomes,proportions,primers,outdir,read_length,
                        create_valid_primer_combinations,
                        make_amplicon,write_fasta_group,
                        run_wgsim_on_fasta,merge_fastq_files,
-                       find_closest_primer_match)
+                       find_closest_primer_match, generate_random_values)
     # the sequence used to create amplicons
+    os.makedirs(outdir)
     sample_names = [fp.split("/")[-1].split(".")[0] for fp in str(genomes).split(",")]
     sample_paths = str(genomes).split(",")
-    proportions = list(map(float, str(proportions).split(",")))
+    if proportions == "NA":
+        print("Read simulation proportions not provided."
+            "Will generate proportions randomly..")
+        if len(sample_names) == 1:
+            print("Only one sample provided...")
+            proportions = [1]
+        else:
+            proportions = generate_random_values(len(sample_names))
+            with open(os.path.join(outdir,"sample_proportions.txt"), 'w') as file:
+                for name, proportion in zip(sample_names, proportions):
+                    file.write(f"{name}: {proportion}\n")
+
+            
+    else:       
+        proportions = list(map(float, str(proportions).split(",")))
     print("Reading and preprocessing the primer file...")
     df = preprocess_primers(primers)
     # error if the proportion counts do not match the sample counts
