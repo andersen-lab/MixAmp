@@ -17,7 +17,7 @@ description = ("Amplicon read simualtor")
 setup(
     name="mixamp",
     version="2024.08",
-    packages=find_packages(include=['pywgsim*']),
+    packages=find_packages(include=['pywgsim*','mixamp']),
     author="Maryam Ahmadi Jeshvaghane",
     license='BSD 2-Clause',
     author_email="mahmadi@scripps.edu",
