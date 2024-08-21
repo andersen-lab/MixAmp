@@ -36,6 +36,11 @@ Imagine we have two different samples with their whole genome fasta files and we
  ```
     mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 20000
  ```
+
+ * Simulate reads with additional parameters such as base error rate, read length and indels fraction
+ ```
+    mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 20000 --error_rate 0.001 --read_length 400 --indel_fraction 0.001
+ ```
 ### Notes
 * Please remember that the primer file must contain a column containing primer sequence. The maximum mismatches allowed for each primer sequence is 1 SNP.
 * To learn more about how to adjust other parameters use `mixamp simulate-proportions --help`
