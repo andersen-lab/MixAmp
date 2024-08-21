@@ -21,7 +21,7 @@ setup(
     author="Maryam Ahmadi Jeshvaghane",
     license='BSD 2-Clause',
     author_email="mahmadi@scripps.edu",
-    url="https://github.com/mariaelf97/mixamp",
+    url="https://github.com/andersen-lab/MixAmp",
     description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',

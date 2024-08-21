@@ -4,7 +4,7 @@
 A tool for Amplicon read simulation for waste water sequencing or other aplications. Users can easily simulate reads from mutiple samples with different proportions using the tool.
 
 ## Usage
-If you use this workflow in a paper, don't forget to give credits to the authors by citing the URL of this (original) <https://github.com/mariaelf97/mixamp> repository.
+If you use this workflow in a paper, don't forget to give credits to the authors by citing the URL of this (original) <https://github.com/andersen-lab/MixAmp> repository.
 
 ## Installation
 
@@ -14,19 +14,19 @@ We recommend installing the package using either of the following commands.
 `pip install mixamp`
 
 
-`pip install git+https://github.com/mariaelf97/mixamp`
+`pip install git+https://github.com/andersen-lab/MixAmp`
 
 ## Example commands
 
 * Run the tool using the following command.
  ```
-    mixamp simulate-proportions [SAMPLE1.fasta,SAMPLE2.fasta,..] [primer.bed] --proportions [0.8,0.2,..]
+    mixamp simulate-proportions [SAMPLE1.fasta,SAMPLE2.fasta,..] [primer.bed] --proportions [0.8,0.2,..] --outdir [output_directory]
  ```
 Imagine we have two different samples with their whole genome fasta files and we are trying to simulate reads from these two.
 
 * Simulate reads without defining proportions (will be assigned randomly)
  ```
-    mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed
+    mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --outdir results/
  ```
 * Simulate reads with user-defined proportions.
  ```
