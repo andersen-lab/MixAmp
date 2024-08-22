@@ -109,9 +109,9 @@ def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation
 
 
 
-def find_closest_primer_match(pattern,reference_seq):
+def find_closest_primer_match(pattern,reference_seq,maxmismatch):
     """function to find a string allowing up to 1 mismatches"""
-    matches = [m.start() for m in regex.finditer(r"\L<primer_string>{s<1}",
+    matches = [m.start() for m in regex.finditer(rf"\L<primer_string>{{s<{maxmismatch}}}",
                                 str(reference_seq), primer_string=[pattern])]
     # if the primer not found, try finding it in the complimentary reverse strand
     if len(matches) == 0:

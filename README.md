@@ -8,11 +8,7 @@ If you use this workflow in a paper, don't forget to give credits to the authors
 
 ## Installation
 
-We recommend installing the package using either of the following commands.
-
-
-`pip install mixamp`
-
+We recommend installing the package using the following command.
 
 `pip install git+https://github.com/andersen-lab/MixAmp`
 
@@ -42,7 +38,8 @@ Imagine we have two different samples with their whole genome fasta files and we
     mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 20000 --error_rate 0.001 --read_length 400 --indel_fraction 0.001
  ```
 ### Notes
-* Please remember that the primer file must contain a column containing primer sequence. The maximum mismatches allowed for each primer sequence is 1 SNP.
+* Please remember that the primer file must contain a column containing primer sequence. The maximum number of mismatches allowed for each primer sequence is 1 SNP. To change this number, you may use the `--maxmismatches` flag.
+
 * To learn more about how to adjust other parameters use `mixamp simulate-proportions --help`
 * Simulated reads from all samples are located in `provided_output_path/reads.fastq`
 * The pipeline will automatically generate random proportions if not provided by the user.

@@ -37,10 +37,13 @@ def cli():
 @click.option('--indel_extend_probability', default=0,
               help='Probability an indel is extended (e.g., 0.3) for simulation',
               show_default=True)
+@click.option('--maxmismatch', default=1,
+              help='Maximum number of mismatches allowed in primer region',
+              show_default=True)
   
 def simulate_proportions(genomes,proportions,primers,outdir,read_length,
                                error_rate, mutation_rate,outerdistance,
-                               readcnt,indel_fraction, indel_extend_probability):
+                               readcnt,indel_fraction, indel_extend_probability,maxmismatch):
     from mixamp.utils import (preprocess_primers,
                        create_valid_primer_combinations,
                        make_amplicon,write_fasta_group,
@@ -84,8 +87,8 @@ def simulate_proportions(genomes,proportions,primers,outdir,read_length,
             # find the left and right primer
         genome_seq = next(SeqIO.parse(path, "fasta"))
         print(f"extracting amplicons for sample {name}...")
-        df["left_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["primer_seq_x"]),genome_seq.seq), axis=1)
-        df["right_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["comp_rev"]),genome_seq.seq), axis=1)
+        df["left_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["primer_seq_x"]),genome_seq.seq,maxmismatch), axis=1)
+        df["right_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["comp_rev"]),genome_seq.seq,maxmismatch), axis=1)
         all_amplicons = create_valid_primer_combinations(df)
         # If there is no primer match, or the length of amplicon
         # substitute 0 instead
