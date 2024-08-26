@@ -20,7 +20,7 @@ We recommend installing the package using the following command.
  ```
 Imagine we have two different samples with their whole genome fasta files and we are trying to simulate reads from these two.
 
-* Simulate reads without defining proportions (will be assigned randomly)
+* Simulate reads without defining proportions (will be assigned randomly, proportions can be found in `results/sample_proportions.txt`)
  ```
     mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --outdir results/
  ```
