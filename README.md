@@ -11,7 +11,9 @@ If you use this workflow in a paper, don't forget to give credits to the authors
 Please follow these steps to install required dependencies:
 
 1. `pip install git+https://github.com/andersen-lab/MixAmp`
-2. `conda install enviroment.yaml`
+2. Install dependencies in an activated conda environment:
+
+`conda env update --file environment.yml`
 
 
 ## Example commands
