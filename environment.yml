@@ -29,3 +29,13 @@ dependencies:
   - wheel=0.44.0=pyhd8ed1ab_0
   - xz=5.2.6=h166bdaf_0
   - zlib=1.2.13=h4ab18f5_6
+  - pip:
+      - biopython==1.84
+      - click==8.1.7
+      - numpy==2.1.0
+      - pandas==2.2.2
+      - python-dateutil==2.9.0.post0
+      - pytz==2024.1
+      - regex==2024.7.24
+      - six==1.16.0
+      - tzdata==2024.1
