@@ -8,9 +8,11 @@ If you use this workflow in a paper, don't forget to give credits to the authors
 
 ## Installation
 
-We recommend installing the package using the following command.
+Please follow these steps to install required dependencies:
 
-`pip install git+https://github.com/andersen-lab/MixAmp`
+1. `pip install git+https://github.com/andersen-lab/MixAmp`
+2. `conda install enviroment.yaml`
+
 
 ## Example commands
 
