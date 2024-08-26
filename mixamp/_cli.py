@@ -115,7 +115,7 @@ def simulate_proportions(genomes,proportions,primers,outdir,read_length,
             for fasta_file in fasta_files:
                 run_wgsim_on_fasta(fasta_file, os.path.join(outdir, name, "reads"),read_length,
                         error_rate, mutation_rate,outerdistance,
-                        readcnt,indel_fraction, indel_extend_probability)
+                        count, indel_fraction, indel_extend_probability)
                 pbar.update(1)
         # create paths to merge all reads after simualtion
         read_path = os.path.join(os.path.abspath(outdir),name,"reads/merged_reads.fastq")
