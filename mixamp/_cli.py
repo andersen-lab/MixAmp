@@ -87,8 +87,9 @@ def simulate_proportions(genomes,proportions,primers,outdir,read_length,
             # find the left and right primer
         genome_seq = next(SeqIO.parse(path, "fasta"))
         print(f"extracting amplicons for sample {name}...")
-        df["left_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["primer_seq_x"]),genome_seq.seq,maxmismatch), axis=1)
-        df["right_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["comp_rev"]),genome_seq.seq,maxmismatch), axis=1)
+        df["left_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["primer_seq_x"]),str(genome_seq.seq),maxmismatch), axis=1)
+        df["right_primer_loc"] = df.apply(lambda row: find_closest_primer_match(str(row["comp_rev"]),str(genome_seq.seq),maxmismatch), axis=1)
+
         all_amplicons = create_valid_primer_combinations(df)
         # If there is no primer match, or the length of amplicon
         # substitute 0 instead

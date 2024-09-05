@@ -1,15 +1,14 @@
-from regex import regex
 import math
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import subprocess
-import argparse
 import pandas as pd
 import os
 import itertools
 import numpy as np
 from tqdm import tqdm
+import regex as re
 
 
 def generate_random_values(N):
@@ -52,7 +51,6 @@ def create_valid_primer_combinations(df):
                     'amplicon_length': [amplicon_length]
                 }
             )
-
             d = pd.concat([d, temp])
     all_amplicons = pd.merge(d, df[["amplicon_number","primer_seq_x","primer_seq_y"]], how='outer', sort=False, on='amplicon_number')
     return all_amplicons
@@ -111,13 +109,12 @@ def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation
 
 def find_closest_primer_match(pattern,reference_seq,maxmismatch):
     """function to find a string allowing up to 1 mismatches"""
-    matches = [m.start() for m in regex.finditer(rf"\L<primer_string>{{s<{maxmismatch}}}",
-                                str(reference_seq), primer_string=[pattern])]
+    # Define the fuzzy regex pattern with a maximum number of mismatches (substitutions)
+    primer_pattern = f"({pattern}){{s<={maxmismatch}}}"
+    matches = [match.start() for match in re.finditer(primer_pattern, reference_seq)]
     # if the primer not found, try finding it in the complimentary reverse strand
     if len(matches) == 0:
-        reference_seq = str(reference_seq.reverse_complement())
-        matches = [m.start() for m in regex.finditer(r"\L<primer_string>{s<1}",
-                                                     reference_seq, primer_string=[pattern])]
+        matches = [match.start() for match in re.finditer(primer_pattern, reference_seq)]
         return matches
     else:
         return matches
