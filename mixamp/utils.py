@@ -114,7 +114,7 @@ def find_closest_primer_match(pattern,reference_seq,maxmismatch):
     matches = [match.start() for match in re.finditer(primer_pattern, reference_seq)]
     # if the primer not found, try finding it in the complimentary reverse strand
     if len(matches) == 0:
-        matches = [match.start() for match in re.finditer(primer_pattern, reference_seq)]
+        matches = [match.start() for match in re.finditer(primer_pattern, str(Seq(reference_seq).reverse_complement()))]
         return matches
     else:
         return matches
