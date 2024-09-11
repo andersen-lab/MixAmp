@@ -1,4 +1,4 @@
-name: trial2
+name: mixamp
 channels:
   - bioconda
   - conda-forge
