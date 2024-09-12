@@ -15,6 +15,8 @@ Please follow these steps to install required dependencies:
 
 `conda create -n mixamp`
 
+`conda activate mixamp`
+
 `conda env update --file environment.yml`
 
 
