@@ -11,7 +11,9 @@ If you use this workflow in a paper, don't forget to give credits to the authors
 Please follow these steps to install required dependencies:
 
 1. `pip install git+https://github.com/andersen-lab/MixAmp`
-2. Install dependencies in an activated conda environment:
+2. Create a conda environment as mixamp and install the dependencies:
+
+`conda create -n mixamp`
 
 `conda env update --file environment.yml`
 
@@ -32,16 +34,17 @@ Imagine we have two different samples with their whole genome fasta files and we
  ```
     mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8
  ```
-* Simulate reads with user-defined proportions and total number of reads.
+* Simulate reads with user-defined proportions and number of reads per amplicon.
  ```
-    mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 20000
+    mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 1000
  ```
 
  * Simulate reads with additional parameters such as base error rate, read length and indels fraction
  ```
-    mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 20000 --error_rate 0.001 --read_length 400 --indel_fraction 0.001
+    mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 1000 --error_rate 0.001 --read_length 400 --indel_fraction 0.001
  ```
 ### Notes
+*It is recommended to define the number of reads per amplicon to be greater than the number of contigs in your amplicon file. This is particularly important when your primers are designed for whole genome sequencing, where each amplicon may contain a substantial number of contigs. Setting too few reads per amplicon may result in empty read files for certain amplicons, leading to incomplete simulated reads.
 * Please remember that the primer file must contain a column containing primer sequence. The maximum number of mismatches allowed for each primer sequence is 1 SNP. To change this number, you may use the `--maxmismatches` flag.
 
 * To learn more about how to adjust other parameters use `mixamp simulate-proportions --help`
