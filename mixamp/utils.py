@@ -31,11 +31,12 @@ def merge_fastq_files(fastq_file, output_file):
     """
     command = f'cat "{fastq_file}" >> "{output_file}"'
     subprocess.call(command, shell=True)
+import pandas as pd
 
 def create_valid_primer_combinations(df):
     # create df with all the valid amplicon coordinates
     df["valid_combinations"] = ""
-    d = pd.DataFrame()
+    d = pd.DataFrame()  # Initialize empty dataframe
     for i in range(len(df)):
         df["valid_combinations"][i] = evaluate_matches(df["left_primer_loc"][i], df["right_primer_loc"][i])
         for j in range(len(df["valid_combinations"][i])):
@@ -51,9 +52,15 @@ def create_valid_primer_combinations(df):
                     'amplicon_length': [amplicon_length]
                 }
             )
-            d = pd.concat([d, temp])
-    all_amplicons = pd.merge(d, df[["amplicon_number","primer_seq_x","primer_seq_y"]], how='outer', sort=False, on='amplicon_number')
-    return all_amplicons
+            d = pd.concat([d, temp], ignore_index=True)
+
+    # Check if the dataframe `d` is empty and exit with an error message if true
+    if d.empty:
+        raise ValueError("No primer matches found, please check your primer file")
+    else:
+        all_amplicons = pd.merge(d, df[["amplicon_number","primer_seq_x","primer_seq_y"]], how='outer', sort=False, on='amplicon_number')
+        return all_amplicons
+
 
 def preprocess_primers(primer_file):
     # define column names to read primers bed file
