@@ -117,7 +117,6 @@ def simulate_proportions(
                                                   maxmismatch),
             axis=1
         )
-        breakpoint()
         all_amplicons = create_valid_primer_combinations(df)
         all_amplicons = all_amplicons.fillna(0)
 
