@@ -37,19 +37,23 @@ def cli():
     help='Read length for simulation'
 )
 @click.option(
-    '--error_rate', default=0, show_default=True,
+    '--error_rate', default=0, type=float,
+    show_default=True,
     help='Base error rate (e.g., 0.02) for simulation'
 )
 @click.option(
-    '--mutation_rate', default=0, show_default=True,
+    '--mutation_rate', default=0, type=float,
+    show_default=True,
     help='Mutation rate (e.g., 0.001) for simulation'
 )
 @click.option(
-    '--indel_fraction', default=0, show_default=True,
+    '--indel_fraction', default=0, type=float,
+    show_default=True,
     help='Fraction of indels (e.g., 0.15) for simulation'
 )
 @click.option(
-    '--indel_extend_probability', default=0, show_default=True,
+    '--indel_extend_probability', default=0, type=float,
+    show_default=True,
     help='Probability an indel is extended (e.g., 0.3) for simulation'
 )
 @click.option(
@@ -61,7 +65,7 @@ def simulate_proportions(
     error_rate, mutation_rate, outerdistance, readcnt,
     indel_fraction, indel_extend_probability, maxmismatch
 ):
-    from mixamp.utils import (
+    from utils import (
         preprocess_primers, create_valid_primer_combinations, make_amplicon,
         write_fasta_group, run_wgsim_on_fasta, merge_fastq_files,
         find_closest_primer_match, generate_random_values
@@ -113,7 +117,7 @@ def simulate_proportions(
                                                   maxmismatch),
             axis=1
         )
-
+        breakpoint()
         all_amplicons = create_valid_primer_combinations(df)
         all_amplicons = all_amplicons.fillna(0)
 
