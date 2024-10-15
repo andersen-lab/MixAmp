@@ -37,19 +37,23 @@ def cli():
     help='Read length for simulation'
 )
 @click.option(
-    '--error_rate', default=0, show_default=True,
+    '--error_rate', default=0, type=float,
+    show_default=True,
     help='Base error rate (e.g., 0.02) for simulation'
 )
 @click.option(
-    '--mutation_rate', default=0, show_default=True,
+    '--mutation_rate', default=0, type=float,
+    show_default=True,
     help='Mutation rate (e.g., 0.001) for simulation'
 )
 @click.option(
-    '--indel_fraction', default=0, show_default=True,
+    '--indel_fraction', default=0, type=float,
+    show_default=True,
     help='Fraction of indels (e.g., 0.15) for simulation'
 )
 @click.option(
-    '--indel_extend_probability', default=0, show_default=True,
+    '--indel_extend_probability', default=0, type=float,
+    show_default=True,
     help='Probability an indel is extended (e.g., 0.3) for simulation'
 )
 @click.option(
@@ -113,7 +117,6 @@ def simulate_proportions(
                                                   maxmismatch),
             axis=1
         )
-
         all_amplicons = create_valid_primer_combinations(df)
         all_amplicons = all_amplicons.fillna(0)
 
