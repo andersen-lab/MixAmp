@@ -65,7 +65,7 @@ def simulate_proportions(
     error_rate, mutation_rate, outerdistance, readcnt,
     indel_fraction, indel_extend_probability, maxmismatch
 ):
-    from utils import (
+    from mixamp.utils import (
         preprocess_primers, create_valid_primer_combinations, make_amplicon,
         write_fasta_group, run_wgsim_on_fasta, merge_fastq_files,
         find_closest_primer_match, generate_random_values
