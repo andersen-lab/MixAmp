@@ -118,7 +118,7 @@ def find_closest_primer_match(pattern,reference_seq,maxmismatch):
     """function to find a string allowing up to 1 mismatches"""
     # Define the fuzzy regex pattern with a maximum number of mismatches (substitutions)
     primer_pattern = f"({pattern}){{s<={maxmismatch}}}"
-    matches = [match.start() for match in re.finditer(primer_pattern, reference_seq)]
+    matches = [match.start() for match in re.finditer(primer_pattern, reference_seq,re.IGNORECASE)]
     # if the primer not found, try finding it in the complimentary reverse strand
     if len(matches) == 0:
         matches = [match.start() for match in re.finditer(primer_pattern, str(Seq(reference_seq).reverse_complement()))]
