@@ -84,13 +84,13 @@ def preprocess_primers(primer_file):
     
 
 
-def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability):
+def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype):
     """Runs wgsim on a single FASTA file with the given parameters."""
     output_prefix = os.path.splitext(os.path.basename(fasta_file))[0]
     output1 = os.path.join(output_dir, f"{output_prefix}_1.fastq")
     output2 = os.path.join(output_dir, f"{output_prefix}_2.fastq")
-    merged_output = os.path.join(output_dir, "merged_reads.fastq")
-
+    merged_output1 = os.path.join(output_dir, "merged_reads_1.fastq")
+    merged_output2 = os.path.join(output_dir, "merged_reads_2.fastq")
     command = [
         "wgsim",
         "-e", str(error_rate),
@@ -105,23 +105,27 @@ def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation
         output1,
         output2
     ]
+    # Add the "-h" flag if haplotype is True
+    if haplotype:
+        command.append("-h")
 
     subprocess.run(command, check=True,capture_output = True,
     text = True)
-    command = f'cat "{output1}" >> "{merged_output}"'
+    command = f'cat "{output1}" >> "{merged_output1}" && cat "{output2}" >> "{merged_output2}"'
     subprocess.call(command, shell=True)
     
-
-
+    
 
 def find_closest_primer_match(pattern,reference_seq,maxmismatch):
     """function to find a string allowing up to 1 mismatches"""
     # Define the fuzzy regex pattern with a maximum number of mismatches (substitutions)
     primer_pattern = f"({pattern}){{s<={maxmismatch}}}"
-    matches = [match.start() for match in re.finditer(primer_pattern, reference_seq,re.IGNORECASE)]
+    
+    matches = [match.start() for match in re.finditer(primer_pattern, reference_seq, re.IGNORECASE)]
+
     # if the primer not found, try finding it in the complimentary reverse strand
     if len(matches) == 0:
-        matches = [match.start() for match in re.finditer(primer_pattern, str(Seq(reference_seq).reverse_complement()))]
+        matches = [match.start() for match in re.finditer(primer_pattern, str(Seq(reference_seq).reverse_complement()), re.IGNORECASE)]
         return matches
     else:
         return matches
