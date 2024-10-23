@@ -83,13 +83,37 @@ def preprocess_primers(primer_file):
     
     
 
+<<<<<<< HEAD
 def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype, simulator):
     """Runs wgsim on a single FASTA file with the given parameters."""
+=======
+def count_contigs(fasta_file):
+    """Counts the number of contigs in the FASTA file."""
+    contig_count = 0
+    with open(fasta_file, 'r') as f:
+        for line in f:
+            if line.startswith('>'):
+                contig_count += 1
+    return contig_count
+
+def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype):
+    """Runs wgsim on a single FASTA file with the given parameters, simulating read_cnt / number_of_contigs reads per contig."""
+    
+    # Count the number of contigs in the FASTA file
+    num_contigs = count_contigs(fasta_file)
+    
+    if num_contigs == 0:
+        raise ValueError("No contigs found in the FASTA file.")
+    
+    # Calculate the number of reads per contig
+    reads_per_contig = read_cnt // num_contigs  # Integer division
+    
+    # Prepare output filenames
+>>>>>>> db64821 (fix issue with multi-contig amplicon distribution)
     output_prefix = os.path.splitext(os.path.basename(fasta_file))[0]
-    output1 = os.path.join(output_dir, f"{output_prefix}_1.fastq")
-    output2 = os.path.join(output_dir, f"{output_prefix}_2.fastq")
     merged_output1 = os.path.join(output_dir, "merged_reads_1.fastq")
     merged_output2 = os.path.join(output_dir, "merged_reads_2.fastq")
+<<<<<<< HEAD
     if simulator == "wgsim":
         command = [
             "wgsim",
@@ -121,11 +145,45 @@ def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mut
             "--illumina-prob-insert", str(indel_fraction),                    # Insertion error rate
             "--illumina-prob-deletion", str(indel_fraction)                  # Deletion error rate
         ]
+=======
+    
+    # Initialize merged output files
+    with open(merged_output1, 'a') as f1, open(merged_output2, 'a') as f2:
+        pass  # This creates empty files
+>>>>>>> db64821 (fix issue with multi-contig amplicon distribution)
 
-    subprocess.run(command, check=True,capture_output = True,
-    text = True)
-    command = f'cat "{output1}" >> "{merged_output1}" && cat "{output2}" >> "{merged_output2}"'
-    subprocess.call(command, shell=True)
+    # Loop through the contigs and run wgsim for each
+    for contig_idx in range(num_contigs):
+        # Temporary output files for each contig
+        output1 = os.path.join(output_dir, f"{output_prefix}_contig{contig_idx + 1}_1.fastq")
+        output2 = os.path.join(output_dir, f"{output_prefix}_contig{contig_idx + 1}_2.fastq")
+        
+        # Build wgsim command for this contig
+        command = [
+            "wgsim",
+            "-e", str(error_rate),
+            "-r", str(mutation_rate),
+            "-d", str(outer_distance),
+            "-N", str(reads_per_contig),
+            "-R", str(indel_fraction),
+            "-X", str(indel_extend_probability),
+            "-1", str(read_length),
+            "-2", str(read_length),
+            fasta_file,
+            output1,
+            output2
+        ]
+
+        # Add the "-h" flag if haplotype is True
+        if haplotype:
+            command.append("-h")
+
+        # Run the wgsim command
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        
+        # Merge the contig-specific output into the final merged output files
+        command_merge = f'cat "{output1}" >> "{merged_output1}" && cat "{output2}" >> "{merged_output2}"'
+        subprocess.call(command_merge, shell=True)
     
 
 
