@@ -25,7 +25,7 @@ def cli():
     help='Output directory', show_default=True
 )
 @click.option(
-    '--outerdistance', default=50,
+    '--outerdistance', default=150,
     help='Outer distance for simulation'
 )
 @click.option(
@@ -56,10 +56,16 @@ def cli():
     '--maxmismatch', default=1, show_default=True,
     help='Maximum number of mismatches allowed in primer region'
 )
+@click.option(
+    '--haplotype', is_flag=True, default=True,
+    help='use this to simulate reads for a haploid organism.'
+)
+
 def simulate_proportions(
     genomes, proportions, primers, outdir, read_length,
     error_rate, mutation_rate, outerdistance, readcnt,
-    indel_fraction, indel_extend_probability, maxmismatch
+    indel_fraction, indel_extend_probability, maxmismatch,
+    haplotype
 ):
     from mixamp.utils import (
         preprocess_primers, create_valid_primer_combinations, make_amplicon,
@@ -153,16 +159,20 @@ def simulate_proportions(
                 run_wgsim_on_fasta(
                     fasta_file, os.path.join(outdir, name, "reads"),
                     read_length, error_rate, mutation_rate, outerdistance,
-                    cnt, indel_fraction, indel_extend_probability
+                    cnt, indel_fraction, indel_extend_probability, haplotype
                 )
                 pbar.update(1)
 
-        read_path = os.path.join(os.path.abspath(outdir),
-                                 name, "reads/merged_reads.fastq")
-        output_path = os.path.join(os.path.abspath(outdir), "reads.fastq")
-
+        read_path1 = os.path.join(os.path.abspath(outdir),
+                                 name, "reads/merged_reads_1.fastq")
+        read_path2 = os.path.join(os.path.abspath(outdir),
+                                 name, "reads/merged_reads_2.fastq")
+        
+        output_path1 = os.path.join(os.path.abspath(outdir), "reads_1.fastq")
+        output_path2 = os.path.join(os.path.abspath(outdir), "reads_2.fastq")
         print("Merging all reads...")
-        merge_fastq_files(read_path, output_path)
+        merge_fastq_files(read_path1, output_path1)
+        merge_fastq_files(read_path2, output_path2)
         print("Finished!")
 
 
