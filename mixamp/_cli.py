@@ -125,7 +125,7 @@ def simulate_proportions(
         )
         all_amplicons = create_valid_primer_combinations(df)
         all_amplicons = all_amplicons.fillna(0)
-
+        all_amplicons["amplicon_length"] = all_amplicons["primer_end"] - all_amplicons["primer_start"] + len(all_amplicons["primer_seq_x"]) + len(all_amplicons["primer_seq_y"])
         os.makedirs(os.path.join(outdir, name, "amplicons"))
         all_amplicons.to_csv(os.path.join(outdir,
                                           name,
@@ -138,8 +138,9 @@ def simulate_proportions(
                                       genome_seq.seq),
             axis=1
         )
-
-        for amplicon_number, group in all_amplicons.groupby('amplicon_number'):
+        
+        all_amplicons['amplicon_suffix'] = all_amplicons['amplicon_number'].apply(lambda x: x.split('_')[0] if '_' in x else x)
+        for amplicon_number, group in all_amplicons.groupby('amplicon_suffix'):
             fasta_file = write_fasta_group(group,
                                            amplicon_number,
                                            os.path.join(outdir,
