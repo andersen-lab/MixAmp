@@ -43,18 +43,14 @@ def create_valid_primer_combinations(df):
             primer_start = df["valid_combinations"][i][j][0]
             primer_end = df["valid_combinations"][i][j][1]
             amplicon_number = df["amplicon_number"][i]
-            amplicon_length = primer_end - primer_start
             temp = pd.DataFrame(
                 {
                     "amplicon_number": [amplicon_number],
                     'primer_start': [primer_start],
-                    'primer_end': [primer_end],
-                    'amplicon_length': [amplicon_length]
+                    'primer_end': [primer_end]
                 }
             )
-            d = pd.concat([d, temp], ignore_index=True)
-
-    # Check if the dataframe `d` is empty and exit with an error message if true
+            d = pd.concat([d, temp], ignore_index=True)    # Check if the dataframe `d` is empty and exit with an error message if true
     if d.empty:
         raise ValueError("No primer matches found, please check your primer file")
     else:
@@ -73,12 +69,15 @@ def preprocess_primers(primer_file):
     df = pd.merge(
         primer_bed.loc[primer_bed["left_right"].str.contains("LEFT")],
         primer_bed.loc[primer_bed["left_right"].str.contains("RIGHT")],
-        on=["amplicon_number"]
+        on=["amplicon_number","primer_pool"]
     )
     # select needed columns
     df = df[["amplicon_number","primer_seq_x","primer_seq_y"]]
     # get complementary reverse sequence of the right primer
     df["comp_rev"] = df.apply(lambda row: Seq(row['primer_seq_y']).reverse_complement(), axis=1)
+    mask = df.duplicated(subset=['amplicon_number'], keep=False)
+    # Apply a function to append an index for duplicated amplicon_number values
+    df.loc[mask, 'amplicon_number'] = df.loc[mask, 'amplicon_number'].astype(str) + "_" +  df.loc[mask].groupby('amplicon_number').cumcount().astype(str) 
     return df
     
     
