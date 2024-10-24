@@ -16,7 +16,7 @@ description = ("Amplicon read simualtor")
 
 setup(
     name="mixamp",
-    version="2024.08",
+    version="2024.10",
     packages=find_packages(include=['mixamp']),
     author="Maryam Ahmadi Jeshvaghane",
     license='BSD 2-Clause',
