@@ -25,6 +25,10 @@ def cli():
     help='Output directory', show_default=True
 )
 @click.option(
+    '--simulator', default="wgsim", type=click.Choice(['wgsim', 'mason_simulator'], case_sensitive=False),
+    help='Select the simulator to use (wgsim or mason_simulator)'
+)
+@click.option(
     '--outerdistance', default=150,
     help='Outer distance for simulation'
 )
@@ -69,12 +73,12 @@ def simulate_proportions(
     genomes, proportions, primers, outdir, read_length,
     error_rate, mutation_rate, outerdistance, readcnt,
     indel_fraction, indel_extend_probability, maxmismatch,
-    haplotype
+    haplotype,simulator
 ):
     from mixamp.utils import (
         preprocess_primers, create_valid_primer_combinations, make_amplicon,
-        write_fasta_group, run_wgsim_on_fasta, merge_fastq_files,
-        find_closest_primer_match, generate_random_values
+        write_fasta_group, run_simulation_on_fasta, merge_fastq_files,
+        find_closest_primer_match, generate_random_values,
     )
 
     os.makedirs(outdir)
@@ -159,10 +163,10 @@ def simulate_proportions(
         with tqdm(total=len(fasta_files),
                   desc="Processing FASTA files") as pbar:
             for fasta_file in fasta_files:
-                run_wgsim_on_fasta(
+                run_simulation_on_fasta(
                     fasta_file, os.path.join(outdir, name, "reads"),
                     read_length, error_rate, mutation_rate, outerdistance,
-                    cnt, indel_fraction, indel_extend_probability, haplotype
+                    cnt, indel_fraction, indel_extend_probability, haplotype,simulator
                 )
                 pbar.update(1)
 

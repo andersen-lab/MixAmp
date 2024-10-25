@@ -83,38 +83,51 @@ def preprocess_primers(primer_file):
     
     
 
-
-def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype):
+def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype, simulator):
     """Runs wgsim on a single FASTA file with the given parameters."""
     output_prefix = os.path.splitext(os.path.basename(fasta_file))[0]
     output1 = os.path.join(output_dir, f"{output_prefix}_1.fastq")
     output2 = os.path.join(output_dir, f"{output_prefix}_2.fastq")
     merged_output1 = os.path.join(output_dir, "merged_reads_1.fastq")
     merged_output2 = os.path.join(output_dir, "merged_reads_2.fastq")
-    command = [
-        "wgsim",
-        "-e", str(error_rate),
-        "-r", str(mutation_rate),
-        "-d", str(outer_distance),
-        "-N", str(read_cnt),
-        "-R", str(indel_fraction),
-        "-X", str(indel_extend_probability),
-        "-1", str(read_length),
-        "-2", str(read_length),
-        fasta_file,
-        output1,
-        output2
-    ]
-    # Add the "-h" flag if haplotype is True
-    if haplotype:
-        command.append("-h")
+    if simulator == "wgsim":
+        command = [
+            "wgsim",
+            "-e", str(error_rate),
+            "-r", str(mutation_rate),
+            "-d", str(outer_distance),
+            "-N", str(read_cnt),
+            "-R", str(indel_fraction),
+            "-X", str(indel_extend_probability),
+            "-1", str(read_length),
+            "-2", str(read_length),
+            fasta_file,
+            output1,
+            output2
+        ]
+        # Add the "-h" flag if haplotype is True
+        if haplotype:
+            command.append("-h")
+    else:
+    # Adjust Mason command
+        command = [
+            "mason_simulator",
+            "-ir", fasta_file,                       # Input reference file
+            "-n", str(int(read_cnt)),                     # Number of reads
+            "-o", output1,                           # Output FASTQ file for first reads
+            "-or", output2,                          # Output FASTQ file for second reads (paired-end)
+            "--illumina-read-length", str(read_length),         # Read length
+            "--illumina-prob-mismatch", str(error_rate),        # Mismatch error rate
+            "--illumina-prob-insert", str(indel_fraction),                    # Insertion error rate
+            "--illumina-prob-deletion", str(indel_fraction)                  # Deletion error rate
+        ]
 
     subprocess.run(command, check=True,capture_output = True,
     text = True)
     command = f'cat "{output1}" >> "{merged_output1}" && cat "{output2}" >> "{merged_output2}"'
     subprocess.call(command, shell=True)
     
-    
+
 
 def find_closest_primer_match(pattern,reference_seq,maxmismatch):
     """function to find a string allowing up to 1 mismatches"""
