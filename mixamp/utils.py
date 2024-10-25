@@ -80,12 +80,6 @@ def preprocess_primers(primer_file):
     df.loc[mask, 'amplicon_number'] = df.loc[mask, 'amplicon_number'].astype(str) + "_" +  df.loc[mask].groupby('amplicon_number').cumcount().astype(str) 
     return df
     
-    
-
-<<<<<<< HEAD
-def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype, simulator):
-    """Runs wgsim on a single FASTA file with the given parameters."""
-=======
 def count_contigs(fasta_file):
     """Counts the number of contigs in the FASTA file."""
     contig_count = 0
@@ -95,9 +89,8 @@ def count_contigs(fasta_file):
                 contig_count += 1
     return contig_count
 
-def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype):
-    """Runs wgsim on a single FASTA file with the given parameters, simulating read_cnt / number_of_contigs reads per contig."""
-    
+def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype, simulator):
+    """Runs simualtor on a single FASTA file with the given parameters."""
     # Count the number of contigs in the FASTA file
     num_contigs = count_contigs(fasta_file)
     
@@ -108,48 +101,12 @@ def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation
     reads_per_contig = read_cnt // num_contigs  # Integer division
     
     # Prepare output filenames
->>>>>>> db64821 (fix issue with multi-contig amplicon distribution)
     output_prefix = os.path.splitext(os.path.basename(fasta_file))[0]
     merged_output1 = os.path.join(output_dir, "merged_reads_1.fastq")
     merged_output2 = os.path.join(output_dir, "merged_reads_2.fastq")
-<<<<<<< HEAD
-    if simulator == "wgsim":
-        command = [
-            "wgsim",
-            "-e", str(error_rate),
-            "-r", str(mutation_rate),
-            "-d", str(outer_distance),
-            "-N", str(read_cnt),
-            "-R", str(indel_fraction),
-            "-X", str(indel_extend_probability),
-            "-1", str(read_length),
-            "-2", str(read_length),
-            fasta_file,
-            output1,
-            output2
-        ]
-        # Add the "-h" flag if haplotype is True
-        if haplotype:
-            command.append("-h")
-    else:
-    # Adjust Mason command
-        command = [
-            "mason_simulator",
-            "-ir", fasta_file,                       # Input reference file
-            "-n", str(int(read_cnt)),                     # Number of reads
-            "-o", output1,                           # Output FASTQ file for first reads
-            "-or", output2,                          # Output FASTQ file for second reads (paired-end)
-            "--illumina-read-length", str(read_length),         # Read length
-            "--illumina-prob-mismatch", str(error_rate),        # Mismatch error rate
-            "--illumina-prob-insert", str(indel_fraction),                    # Insertion error rate
-            "--illumina-prob-deletion", str(indel_fraction)                  # Deletion error rate
-        ]
-=======
-    
-    # Initialize merged output files
+        # Initialize merged output files
     with open(merged_output1, 'a') as f1, open(merged_output2, 'a') as f2:
         pass  # This creates empty files
->>>>>>> db64821 (fix issue with multi-contig amplicon distribution)
 
     # Loop through the contigs and run wgsim for each
     for contig_idx in range(num_contigs):
@@ -157,26 +114,38 @@ def run_wgsim_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation
         output1 = os.path.join(output_dir, f"{output_prefix}_contig{contig_idx + 1}_1.fastq")
         output2 = os.path.join(output_dir, f"{output_prefix}_contig{contig_idx + 1}_2.fastq")
         
-        # Build wgsim command for this contig
-        command = [
-            "wgsim",
-            "-e", str(error_rate),
-            "-r", str(mutation_rate),
-            "-d", str(outer_distance),
-            "-N", str(reads_per_contig),
-            "-R", str(indel_fraction),
-            "-X", str(indel_extend_probability),
-            "-1", str(read_length),
-            "-2", str(read_length),
-            fasta_file,
-            output1,
-            output2
-        ]
-
-        # Add the "-h" flag if haplotype is True
-        if haplotype:
-            command.append("-h")
-
+        if simulator == "wgsim":
+            command = [
+                "wgsim",
+                "-e", str(error_rate),
+                "-r", str(mutation_rate),
+                "-d", str(outer_distance),
+                "-N", str(reads_per_contig),
+                "-R", str(indel_fraction),
+                "-X", str(indel_extend_probability),
+                "-1", str(read_length),
+                "-2", str(read_length),
+                fasta_file,
+                output1,
+                output2
+            ]
+            # Add the "-h" flag if haplotype is True
+            if haplotype:
+                command.append("-h")
+        else:
+        # Adjust Mason command
+            command = [
+                "mason_simulator",
+                "-ir", fasta_file,                       # Input reference file
+                "-n", str(int(reads_per_contig)),                     # Number of reads
+                "-o", output1,                           # Output FASTQ file for first reads
+                "-or", output2,                          # Output FASTQ file for second reads (paired-end)
+                "--illumina-read-length", str(read_length),         # Read length
+                "--illumina-prob-mismatch", str(error_rate),        # Mismatch error rate
+                "--illumina-prob-insert", str(indel_fraction),                    # Insertion error rate
+                "--illumina-prob-deletion", str(indel_fraction)                  # Deletion error rate
+            ]
+    
         # Run the wgsim command
         subprocess.run(command, check=True, capture_output=True, text=True)
         
