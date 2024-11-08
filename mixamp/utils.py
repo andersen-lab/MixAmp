@@ -89,8 +89,17 @@ def count_contigs(fasta_file):
                 contig_count += 1
     return contig_count
 
-def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mutation_rate, outer_distance, read_cnt, indel_fraction, indel_extend_probability, haplotype, simulator):
-    """Runs simualtor on a single FASTA file with the given parameters."""
+import os
+import subprocess
+
+def run_simulation_on_fasta(fasta_file, output_dir,
+                            read_length, error_rate,
+                            mutation_rate, outer_distance,
+                            read_cnt, indel_fraction,
+                            indel_extend_probability,
+                            haplotype, simulator,
+                            mean_quality_begin, mean_quality_end):
+    """Runs simulator on a single FASTA file with the given parameters."""
     # Count the number of contigs in the FASTA file
     num_contigs = count_contigs(fasta_file)
     
@@ -104,7 +113,8 @@ def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mut
     output_prefix = os.path.splitext(os.path.basename(fasta_file))[0]
     merged_output1 = os.path.join(output_dir, "merged_reads_1.fastq")
     merged_output2 = os.path.join(output_dir, "merged_reads_2.fastq")
-        # Initialize merged output files
+    
+    # Initialize merged output files
     with open(merged_output1, 'a') as f1, open(merged_output2, 'a') as f2:
         pass  # This creates empty files
 
@@ -133,26 +143,37 @@ def run_simulation_on_fasta(fasta_file, output_dir, read_length, error_rate, mut
             if haplotype:
                 command.append("-h")
         else:
-        # Adjust Mason command
+            # Adjust Mason command
             command = [
                 "mason_simulator",
-                "-ir", fasta_file,                       # Input reference file
-                "-n", str(int(reads_per_contig)),                     # Number of reads
-                "-o", output1,                           # Output FASTQ file for first reads
-                "-or", output2,                          # Output FASTQ file for second reads (paired-end)
-                "--illumina-read-length", str(read_length),         # Read length
-                "--illumina-prob-mismatch", str(error_rate),        # Mismatch error rate
-                "--illumina-prob-insert", str(indel_fraction),                    # Insertion error rate
-                "--illumina-prob-deletion", str(indel_fraction)                  # Deletion error rate
+                "-ir", fasta_file,
+                "-n", str(int(reads_per_contig)),
+                "-o", output1,
+                "-or", output2,
+                "--illumina-read-length", str(read_length),
+                "--illumina-prob-insert", str(indel_fraction),
+                "--illumina-prob-deletion", str(indel_fraction),
+                "--illumina-prob-mismatch", str(error_rate),
+                "--illumina-prob-mismatch-begin", str(error_rate),
+                "--illumina-prob-mismatch-end", str(error_rate),
+                "--illumina-quality-mean-begin", str(mean_quality_begin),
+                "--illumina-quality-mean-end", str(mean_quality_end),
+                "--illumina-mismatch-quality-mean-begin", str(error_rate),
+                "--illumina-mismatch-quality-mean-end", str(error_rate),
             ]
     
-        # Run the wgsim command
-        subprocess.run(command, check=True, capture_output=True, text=True)
+        # Run the simulator command and capture any errors
+        try:
+            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            print(result.stdout)  # Print the standard output for debugging if needed
+        except subprocess.CalledProcessError as e:
+            print(f"An error occurred while running the command: {e}")
+            print(f"Error output: {e.stderr}")
         
         # Merge the contig-specific output into the final merged output files
         command_merge = f'cat "{output1}" >> "{merged_output1}" && cat "{output2}" >> "{merged_output2}"'
         subprocess.call(command_merge, shell=True)
-    
+
 
 
 def find_closest_primer_match(pattern,reference_seq,maxmismatch):
