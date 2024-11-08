@@ -2,6 +2,7 @@ import os
 from Bio import SeqIO
 import click
 from tqdm import tqdm
+import numpy as np
 
 
 @click.group(context_settings={'show_default': True})
@@ -25,36 +26,50 @@ def cli():
     help='Output directory', show_default=True
 )
 @click.option(
+    '--simulator', default="mason", type=click.Choice(['wgsim', 'mason'], case_sensitive=False),
+    help='Select the simulator to use (wgsim or mason)'
+)
+@click.option(
     '--outerdistance', default=150,
-    help='Outer distance for simulation'
+    help='Outer distance for simulation using wgsim'
 )
 @click.option(
     '--readcnt', default=500,
-    help='Number of reads per amplicon.'
+    help='Number of reads per amplicon'
 )
 @click.option(
     '--read_length', default=150,
     help='Read length for simulation'
 )
 @click.option(
-    '--error_rate', default=0, type=float,
+    '--error_rate', default=0.004, type=float,
     show_default=True,
-    help='Base error rate (e.g., 0.02) for simulation'
+    help='Base error rate (e.g., 0.02) for simulation using both wgsim and mason'
 )
 @click.option(
-    '--mutation_rate', default=0, type=float,
+    '--mean_quality_begin', default=40, type=float,
     show_default=True,
-    help='Mutation rate (e.g., 0.001) for simulation'
+    help='Mean sequence quality in beginning of the read for mason simulator only'
 )
 @click.option(
-    '--indel_fraction', default=0, type=float,
+    '--mean_quality_end', default=39.5, type=float,
     show_default=True,
-    help='Fraction of indels (e.g., 0.15) for simulation'
+    help='Mean sequence quality in end of the read for mason simulator only'
 )
 @click.option(
-    '--indel_extend_probability', default=0, type=float,
+    '--mutation_rate', default=0.001, type=float,
     show_default=True,
-    help='Probability an indel is extended (e.g., 0.3) for simulation'
+    help='Mutation rate (e.g., 0.001) for simulation for wgsim'
+)
+@click.option(
+    '--indel_fraction', default=0.00005, type=float,
+    show_default=True,
+    help='Fraction of indels (e.g., 0.15) for simulation, this will be both insertion and deletion probablity for mason'
+)
+@click.option(
+    '--indel_extend_probability', default=0.00005, type=float,
+    show_default=True,
+    help='Probability an indel is extended (e.g., 0.3) for simulation for wgsim'
 )
 @click.option(
     '--maxmismatch', default=1, show_default=True,
@@ -62,19 +77,19 @@ def cli():
 )
 @click.option(
     '--haplotype', is_flag=True, default=True,
-    help='use this to simulate reads for a haploid organism.'
+    help='use this to simulate reads for a haploid organism for wgsim'
 )
 
 def simulate_proportions(
     genomes, proportions, primers, outdir, read_length,
     error_rate, mutation_rate, outerdistance, readcnt,
     indel_fraction, indel_extend_probability, maxmismatch,
-    haplotype
+    haplotype,simulator,mean_quality_begin,mean_quality_end
 ):
     from mixamp.utils import (
         preprocess_primers, create_valid_primer_combinations, make_amplicon,
-        write_fasta_group, run_wgsim_on_fasta, merge_fastq_files,
-        find_closest_primer_match, generate_random_values
+        write_fasta_group, run_simulation_on_fasta, merge_fastq_files,
+        find_closest_primer_match, generate_random_values,
     )
 
     os.makedirs(outdir)
@@ -125,7 +140,12 @@ def simulate_proportions(
         )
         all_amplicons = create_valid_primer_combinations(df)
         all_amplicons = all_amplicons.fillna(0)
-        all_amplicons["amplicon_length"] = all_amplicons["primer_end"] - all_amplicons["primer_start"] + len(all_amplicons["primer_seq_x"]) + len(all_amplicons["primer_seq_y"])
+        all_amplicons["amplicon_length"] = np.where((all_amplicons["primer_start"] != 0) &
+                                                    (all_amplicons["primer_end"] != 0),
+                                                    all_amplicons["primer_end"] - all_amplicons["primer_start"]+ all_amplicons["primer_seq_y"].str.len(),0)
+
+
+
         os.makedirs(os.path.join(outdir, name, "amplicons"))
         all_amplicons.to_csv(os.path.join(outdir,
                                           name,
@@ -160,10 +180,11 @@ def simulate_proportions(
         with tqdm(total=len(fasta_files),
                   desc="Processing FASTA files") as pbar:
             for fasta_file in fasta_files:
-                run_wgsim_on_fasta(
+                run_simulation_on_fasta(
                     fasta_file, os.path.join(outdir, name, "reads"),
                     read_length, error_rate, mutation_rate, outerdistance,
-                    cnt, indel_fraction, indel_extend_probability, haplotype
+                    cnt, indel_fraction, indel_extend_probability, haplotype,simulator,
+                    mean_quality_begin,mean_quality_end
                 )
                 pbar.update(1)
 
