@@ -2,6 +2,7 @@ import os
 from Bio import SeqIO
 import click
 from tqdm import tqdm
+import numpy as np
 
 
 @click.group(context_settings={'show_default': True})
@@ -25,7 +26,7 @@ def cli():
     help='Output directory', show_default=True
 )
 @click.option(
-    '--simulator', default="wgsim", type=click.Choice(['wgsim', 'mason_simulator'], case_sensitive=False),
+    '--simulator', default="mason", type=click.Choice(['wgsim', 'mason'], case_sensitive=False),
     help='Select the simulator to use (wgsim or mason_simulator)'
 )
 @click.option(
@@ -129,7 +130,11 @@ def simulate_proportions(
         )
         all_amplicons = create_valid_primer_combinations(df)
         all_amplicons = all_amplicons.fillna(0)
-        all_amplicons["amplicon_length"] = all_amplicons["primer_end"] - all_amplicons["primer_start"] + len(all_amplicons["primer_seq_x"]) + len(all_amplicons["primer_seq_y"])
+
+        all_amplicons["amplicon_length"] = np.where((all_amplicons["primer_start"] != 0) &
+                                                    (all_amplicons["primer_end"] != 0),
+                                                    all_amplicons["primer_end"] - all_amplicons["primer_start"]+ all_amplicons["primer_seq_y"].str.len(),0)
+
         os.makedirs(os.path.join(outdir, name, "amplicons"))
         all_amplicons.to_csv(os.path.join(outdir,
                                           name,
