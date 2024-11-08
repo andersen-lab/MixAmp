@@ -140,10 +140,11 @@ def simulate_proportions(
         )
         all_amplicons = create_valid_primer_combinations(df)
         all_amplicons = all_amplicons.fillna(0)
-
         all_amplicons["amplicon_length"] = np.where((all_amplicons["primer_start"] != 0) &
                                                     (all_amplicons["primer_end"] != 0),
                                                     all_amplicons["primer_end"] - all_amplicons["primer_start"]+ all_amplicons["primer_seq_y"].str.len(),0)
+
+
 
         os.makedirs(os.path.join(outdir, name, "amplicons"))
         all_amplicons.to_csv(os.path.join(outdir,

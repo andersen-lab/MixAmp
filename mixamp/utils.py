@@ -89,8 +89,6 @@ def count_contigs(fasta_file):
                 contig_count += 1
     return contig_count
 
-import os
-import subprocess
 
 def run_simulation_on_fasta(fasta_file, output_dir,
                             read_length, error_rate,
