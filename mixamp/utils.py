@@ -96,7 +96,8 @@ def run_simulation_on_fasta(fasta_file, output_dir,
                             read_cnt, indel_fraction,
                             indel_extend_probability,
                             haplotype, simulator,
-                            mean_quality_begin, mean_quality_end):
+                            mean_quality_begin, mean_quality_end,
+                            seed):
     """Runs simulator on a single FASTA file with the given parameters."""
     # Count the number of contigs in the FASTA file
     num_contigs = count_contigs(fasta_file)
@@ -137,6 +138,8 @@ def run_simulation_on_fasta(fasta_file, output_dir,
                 output1,
                 output2
             ]
+            if seed is not None:
+                 command.extend(["--s", str(seed)])
             # Add the "-h" flag if haplotype is True
             if haplotype:
                 command.append("-h")
@@ -159,6 +162,8 @@ def run_simulation_on_fasta(fasta_file, output_dir,
                 "--illumina-mismatch-quality-mean-begin", str(error_rate),
                 "--illumina-mismatch-quality-mean-end", str(error_rate),
             ]
+            if seed is not None:
+                command.extend(["--seed", str(seed)])
     
         # Run the simulator command and capture any errors
         try:
