@@ -34,6 +34,10 @@ def cli():
     help='Outer distance for simulation using wgsim'
 )
 @click.option(
+    '--seed', default=None, type=int,
+    help='seed for simulation'
+)
+@click.option(
     '--readcnt', default=500,
     help='Number of reads per amplicon'
 )
@@ -80,16 +84,18 @@ def cli():
     help='use this to simulate reads for a haploid organism for wgsim'
 )
 
+
 def simulate_proportions(
     genomes, proportions, primers, outdir, read_length,
     error_rate, mutation_rate, outerdistance, readcnt,
     indel_fraction, indel_extend_probability, maxmismatch,
-    haplotype,simulator,mean_quality_begin,mean_quality_end
+    haplotype,simulator,mean_quality_begin,mean_quality_end,
+    seed
 ):
     from mixamp.utils import (
         preprocess_primers, create_valid_primer_combinations, make_amplicon,
         write_fasta_group, run_simulation_on_fasta, merge_fastq_files,
-        find_closest_primer_match, generate_random_values,
+        find_closest_primer_match, generate_random_values
     )
 
     os.makedirs(outdir)
@@ -184,7 +190,7 @@ def simulate_proportions(
                     fasta_file, os.path.join(outdir, name, "reads"),
                     read_length, error_rate, mutation_rate, outerdistance,
                     cnt, indel_fraction, indel_extend_probability, haplotype,simulator,
-                    mean_quality_begin,mean_quality_end
+                    mean_quality_begin,mean_quality_end,seed
                 )
                 pbar.update(1)
 
