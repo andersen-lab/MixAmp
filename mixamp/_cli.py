@@ -75,7 +75,8 @@ def cli():
     default=0.00005,
     type=float,
     show_default=True,
-    help="Fraction of indels (e.g., 0.15) for simulation, this will be both insertion and deletion probablity for mason",
+    help="Fraction of indels (e.g., 0.15) for simulation,"
+    "this will be both insertion and deletion probablity for mason",
 )
 @click.option(
     "--indel_extend_probability",
@@ -135,14 +136,13 @@ def simulate_proportions(
     sample_paths = str(genomes).split(",")
 
     if proportions == "NA":
-        print(
-            "Read simulation proportions not provided.\
-            Will generate proportions randomly..."
-        )
         if len(sample_names) == 1:
-            print("Only one sample provided...")
+            print("Only one sample provided. Using 1.0 as the sample proportion.")
             proportions = [1]
         else:
+            print(
+                "Read simulation proportions not provided. Generating proportions randomly..."
+            )
             proportions = generate_random_values(len(sample_names))
             with open(os.path.join(outdir, "sample_proportions.txt"), "w") as file:
                 for name, proportion in zip(sample_names, proportions):
@@ -158,65 +158,67 @@ def simulate_proportions(
     if sum(proportions) != 1.0:
         raise Exception("Sum of all proportions should equal to 1.0!")
     read_cnts = [i * int(readcnt) for i in proportions]
+    with tqdm(total=len(sample_names), desc="Simulation progress...") as pbar:
+        for name, path, cnt in zip(sample_names, sample_paths, read_cnts):
+            genome_seq = next(SeqIO.parse(path, "fasta"))
+            print(f"Extracting amplicons for sample {name}...")
 
-    for name, path, cnt in zip(sample_names, sample_paths, read_cnts):
-        genome_seq = next(SeqIO.parse(path, "fasta"))
-        print(f"Extracting amplicons for sample {name}...")
-
-        df["left_primer_loc"] = df.apply(
-            lambda row: find_closest_primer_match(
-                str(row["primer_seq_x"]), str(genome_seq.seq), maxmismatch
-            ),
-            axis=1,
-        )
-        df["right_primer_loc"] = df.apply(
-            lambda row: find_closest_primer_match(
-                str(row["comp_rev"]), str(genome_seq.seq), maxmismatch
-            ),
-            axis=1,
-        )
-        all_amplicons = create_valid_primer_combinations(df)
-        all_amplicons = all_amplicons.fillna(0)
-        all_amplicons["amplicon_length"] = np.where(
-            (all_amplicons["primer_start"] != 0) & (all_amplicons["primer_end"] != 0),
-            all_amplicons["primer_end"]
-            - all_amplicons["primer_start"]
-            + all_amplicons["primer_seq_y"].str.len(),
-            0,
-        )
-
-        os.makedirs(os.path.join(outdir, name, "amplicons"))
-        all_amplicons.to_csv(os.path.join(outdir, name, "amplicons/amplicon_stats.csv"))
-
-        all_amplicons["amplicon_sequence"] = all_amplicons.apply(
-            lambda row: make_amplicon(
-                row["primer_start"],
-                row["primer_end"],
-                row["primer_seq_y"],
-                genome_seq.seq,
-            ),
-            axis=1,
-        )
-
-        all_amplicons["amplicon_suffix"] = all_amplicons["amplicon_number"].apply(
-            lambda x: x.split("_")[0] if "_" in x else x
-        )
-        for amplicon_number, group in all_amplicons.groupby("amplicon_suffix"):
-            fasta_file = write_fasta_group(
-                group, amplicon_number, os.path.join(outdir, name, "amplicons")
+            df["left_primer_loc"] = df.apply(
+                lambda row: find_closest_primer_match(
+                    str(row["primer_seq_x"]), str(genome_seq.seq), maxmismatch
+                ),
+                axis=1,
+            )
+            df["right_primer_loc"] = df.apply(
+                lambda row: find_closest_primer_match(
+                    str(row["comp_rev"]), str(genome_seq.seq), maxmismatch
+                ),
+                axis=1,
+            )
+            all_amplicons = create_valid_primer_combinations(df)
+            all_amplicons = all_amplicons.fillna(0)
+            all_amplicons["amplicon_length"] = np.where(
+                (all_amplicons["primer_start"] != 0)
+                & (all_amplicons["primer_end"] != 0),
+                all_amplicons["primer_end"]
+                - all_amplicons["primer_start"]
+                + all_amplicons["primer_seq_y"].str.len(),
+                0,
             )
 
-        print("Starting read simulation...")
-        if not os.path.exists(os.path.join(outdir, name, "reads")):
-            os.makedirs(os.path.join(outdir, name, "reads"))
+            os.makedirs(os.path.join(outdir, name, "amplicons"))
+            all_amplicons.to_csv(
+                os.path.join(outdir, name, "amplicons/amplicon_stats.csv")
+            )
 
-        fasta_files = [
-            os.path.join(outdir, name, "amplicons", f)
-            for f in os.listdir(os.path.join(outdir, name, "amplicons"))
-            if f.endswith(".fasta") or f.endswith(".fa")
-        ]
+            all_amplicons["amplicon_sequence"] = all_amplicons.apply(
+                lambda row: make_amplicon(
+                    row["primer_start"],
+                    row["primer_end"],
+                    row["primer_seq_y"],
+                    genome_seq.seq,
+                ),
+                axis=1,
+            )
 
-        with tqdm(total=len(fasta_files), desc="Processing FASTA files") as pbar:
+            all_amplicons["amplicon_suffix"] = all_amplicons["amplicon_number"].apply(
+                lambda x: x.split("_")[0] if "_" in x else x
+            )
+            for amplicon_number, group in all_amplicons.groupby("amplicon_suffix"):
+                fasta_file = write_fasta_group(
+                    group, amplicon_number, os.path.join(outdir, name, "amplicons")
+                )
+
+            print("Starting read simulation...")
+            if not os.path.exists(os.path.join(outdir, name, "reads")):
+                os.makedirs(os.path.join(outdir, name, "reads"))
+
+            fasta_files = [
+                os.path.join(outdir, name, "amplicons", f)
+                for f in os.listdir(os.path.join(outdir, name, "amplicons"))
+                if f.endswith(".fasta") or f.endswith(".fa")
+            ]
+
             for fasta_file in fasta_files:
                 run_simulation_on_fasta(
                     fasta_file,
@@ -234,21 +236,20 @@ def simulate_proportions(
                     mean_quality_end,
                     seed,
                 )
-                pbar.update(1)
+            read_path1 = os.path.join(
+                os.path.abspath(outdir), name, "reads/merged_reads_1.fastq"
+            )
+            read_path2 = os.path.join(
+                os.path.abspath(outdir), name, "reads/merged_reads_2.fastq"
+            )
 
-        read_path1 = os.path.join(
-            os.path.abspath(outdir), name, "reads/merged_reads_1.fastq"
-        )
-        read_path2 = os.path.join(
-            os.path.abspath(outdir), name, "reads/merged_reads_2.fastq"
-        )
-
-        output_path1 = os.path.join(os.path.abspath(outdir), "reads_1.fastq")
-        output_path2 = os.path.join(os.path.abspath(outdir), "reads_2.fastq")
-        print("Merging all reads...")
-        merge_fastq_files(read_path1, output_path1)
-        merge_fastq_files(read_path2, output_path2)
-        print("Finished!")
+            output_path1 = os.path.join(os.path.abspath(outdir), "reads_1.fastq")
+            output_path2 = os.path.join(os.path.abspath(outdir), "reads_2.fastq")
+            print("Merging all reads...")
+            merge_fastq_files(read_path1, output_path1)
+            merge_fastq_files(read_path2, output_path2)
+            print("Finished!")
+        pbar.update(1)
 
 
 if __name__ == "__main__":

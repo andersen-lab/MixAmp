@@ -7,7 +7,6 @@ import pandas as pd
 import os
 import itertools
 import numpy as np
-from tqdm import tqdm
 import regex as re
 
 
@@ -232,11 +231,8 @@ def run_simulation_on_fasta(
         # Run the simulator command and capture any errors
         try:
             result = subprocess.run(command, check=True, capture_output=True, text=True)
-            print(result.stdout)  # Print the standard output for debugging if needed
         except subprocess.CalledProcessError as e:
             print(f"An error occurred while running the command: {e}")
-            print(f"Error output: {e.stderr}")
-
         # Merge the contig-specific output into the final merged output files
         command_merge = f'cat "{output1}" >> "{merged_output1}" && cat "{output2}" >> "{merged_output2}"'
         subprocess.call(command_merge, shell=True)
