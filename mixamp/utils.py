@@ -31,32 +31,39 @@ def merge_fastq_files(fastq_file, output_file):
     """
     command = f'cat "{fastq_file}" >> "{output_file}"'
     subprocess.call(command, shell=True)
-import pandas as pd
-
+    
 def create_valid_primer_combinations(df):
-    # create df with all the valid amplicon coordinates
-    df["valid_combinations"] = ""
-    d = pd.DataFrame()  # Initialize empty dataframe
-    for i in range(len(df)):
-        df["valid_combinations"][i] = evaluate_matches(df["left_primer_loc"][i], df["right_primer_loc"][i])
-        for j in range(len(df["valid_combinations"][i])):
-            primer_start = df["valid_combinations"][i][j][0]
-            primer_end = df["valid_combinations"][i][j][1]
-            amplicon_number = df["amplicon_number"][i]
-            temp = pd.DataFrame(
-                {
-                    "amplicon_number": [amplicon_number],
-                    'primer_start': [primer_start],
-                    'primer_end': [primer_end]
-                }
-            )
-            d = pd.concat([d, temp], ignore_index=True)    # Check if the dataframe `d` is empty and exit with an error message if true
-    if d.empty:
-        raise ValueError("No primer matches found, please check your primer file")
-    else:
-        all_amplicons = pd.merge(d, df[["amplicon_number","primer_seq_x","primer_seq_y"]], how='outer', sort=False, on='amplicon_number')
-        return all_amplicons
+    # Ensure the column exists before assignment
+    if "valid_combinations" not in df.columns:
+        df["valid_combinations"] = None  
 
+    valid_primers = []  # Use a list instead of concatenating DataFrames
+
+    for i in range(len(df)):
+        # Safe assignment using .at[]
+        df.at[i, "valid_combinations"] = evaluate_matches(df.at[i, "left_primer_loc"], df.at[i, "right_primer_loc"])
+        
+        for primer_start, primer_end in df.at[i, "valid_combinations"]:
+            valid_primers.append({
+                "amplicon_number": df.at[i, "amplicon_number"],
+                "primer_start": primer_start,
+                "primer_end": primer_end
+            })
+
+    # Check if we found any valid primers
+    if not valid_primers:
+        raise ValueError("No primer matches found, please check your primer file.")
+
+    # Convert collected data to DataFrame efficiently
+    valid_primers_df = pd.DataFrame.from_records(valid_primers)
+
+    # Merge with original DataFrame to include additional columns
+    all_amplicons = valid_primers_df.merge(
+        df[["amplicon_number", "primer_seq_x", "primer_seq_y"]],
+        how="left", on="amplicon_number"
+    )
+
+    return all_amplicons
 
 def preprocess_primers(primer_file):
     # define column names to read primers bed file

@@ -97,8 +97,11 @@ def simulate_proportions(
         write_fasta_group, run_simulation_on_fasta, merge_fastq_files,
         find_closest_primer_match, generate_random_values
     )
-
-    os.makedirs(outdir)
+    if os.path.exists(outdir):
+        print(f"Directory '{outdir}' already exists.")
+    else:
+        os.makedirs(outdir)
+        print(f"Simulated results will be located at:'{outdir}'.")
     sample_names = [fp.split("/")[-1].split(".")[0]
                     for fp in str(genomes).split(",")]
     sample_paths = str(genomes).split(",")
