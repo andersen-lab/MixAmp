@@ -44,6 +44,20 @@ class CommandLineTests(unittest.TestCase):
             mixamp/tests/data/ARTIC_V4-1.bed --readlength 130"
         )
         self.assertTrue(file_exists(".", "results/reads_1.fastq"))
+    def test_simulation_with_2genomes(self):
+        os.system(
+            "mixamp simulate-proportions mixamp/tests/data/ATM-2FFMD73N3.fasta,\
+                mixamp/tests/data/KR-SEARCH-120354.fasta \
+            mixamp/tests/data/ARTIC_V4-1.bed"
+        )
+        self.assertTrue(file_exists(".", "results/reads_1.fastq"))
+    def test_simulation_with_2genomes_proportions(self):
+        os.system(
+            "mixamp simulate-proportions mixamp/tests/data/ATM-2FFMD73N3.fasta,\
+                mixamp/tests/data/KR-SEARCH-120354.fasta \
+            mixamp/tests/data/ARTIC_V4-1.bed --proportions 0.8,0.2"
+        )
+        self.assertTrue(file_exists(".", "results/reads_1.fastq"))
 
 
 if __name__ == "__main__":

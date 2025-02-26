@@ -6,7 +6,7 @@ import numpy as np
 
 
 @click.group(context_settings={"show_default": True})
-@click.version_option("2025.02")
+@click.version_option("2.0.0")
 def cli():
     pass
 
