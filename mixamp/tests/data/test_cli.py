@@ -1,6 +1,7 @@
 import unittest
 import os
 
+
 def file_exists(directory, filename):
     file_path = os.path.join(directory, filename)
     return os.path.exists(file_path)
@@ -44,6 +45,7 @@ class CommandLineTests(unittest.TestCase):
             mixamp/tests/data/ARTIC_V4-1.bed --readlength 130"
         )
         self.assertTrue(file_exists(".", "results/reads_1.fastq"))
+
     def test_simulation_with_2genomes(self):
         os.system(
             "mixamp simulate-proportions mixamp/tests/data/ATM-2FFMD73N3.fasta,\
@@ -51,6 +53,7 @@ class CommandLineTests(unittest.TestCase):
             mixamp/tests/data/ARTIC_V4-1.bed"
         )
         self.assertTrue(file_exists(".", "results/reads_1.fastq"))
+
     def test_simulation_with_2genomes_proportions(self):
         os.system(
             "mixamp simulate-proportions mixamp/tests/data/ATM-2FFMD73N3.fasta,\
@@ -62,4 +65,3 @@ class CommandLineTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
