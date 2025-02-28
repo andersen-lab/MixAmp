@@ -9,6 +9,61 @@ import itertools
 import numpy as np
 import regex as re
 
+def validate_primer_bed(df):
+    """
+    Validates a DataFrame representing a primer BED file.
+
+    Args:
+        df (pd.DataFrame): DataFrame to validate.
+
+    Returns:
+        pd.DataFrame: The original DataFrame if valid.
+
+    Raises:
+        ValueError: If the DataFrame does not conform to expected format.
+    """
+
+    # Check column count
+    if df.shape[1] < 6 or df.shape[1] > 7:
+        raise ValueError(
+            "DataFrame must have 6 or 7 columns. Please refer to example primer file."
+        )
+
+    # Check column types
+    if not all(isinstance(df.iloc[i, 0], str) for i in range(len(df))):
+        raise ValueError("First column must contain only strings.(Chromosome name)")
+
+    if not pd.api.types.is_numeric_dtype(df.iloc[:, 1]):
+        raise ValueError("Second column must be numeric.(Primer start)")
+
+    if not pd.api.types.is_numeric_dtype(df.iloc[:, 2]):
+        raise ValueError("Third column must be numeric.(Primer end)")
+
+    # Check that third column is greater than second column
+    if not (df.iloc[:, 2] > df.iloc[:, 1]).all():
+        raise ValueError(
+            "Third column values must be greater than second column values."
+            "Primer start coordinates cannot be greater than primer end."
+        )
+
+    # Check fourth column format
+    pattern = re.compile(r"^[\w-]+_\d+_(LEFT|RIGHT)(?:_.*)?$")
+
+    # Strip any leading/trailing spaces and ensure the values are strings
+    if not all(isinstance(val, str) and pattern.match(val.strip()) for val in df.iloc[:, 3]):
+        raise ValueError(
+        "Fourth column format is incorrect."
+        " Expected 'string_number_LEFT/RIGHT' with possible extra characters"
+        " at the end indicating whether the primer is alternative."
+    )
+
+    if not pd.api.types.is_numeric_dtype(df.iloc[:, 4]):
+        raise ValueError("Fifth column must be numeric.(strand +/-)")
+
+    if not all(isinstance(df.iloc[i, 5], str) for i in range(len(df))):
+        raise ValueError("Sixth column must contain only strings.(Primer sequence)")
+    return df
+
 
 def generate_random_values(N):
     # Generate N random values
@@ -85,6 +140,7 @@ def preprocess_primers(primer_file):
     ]
     # read the primer bed file
     primer_bed = pd.read_csv(primer_file, sep="\t", names=col_names)
+    primer_bed = validate_primer_bed(primer_bed)
     # split the amplicon name into number and left/right
     primer_bed["amplicon_number"] = primer_bed["left_right"].str.split("_").str[1]
     # merge the df with itself to have right and left primer on one row
