@@ -36,26 +36,26 @@ conda env update --file environment.yml
 
 Run the tool using the following command.
  ```
-mixamp simulate-proportions [SAMPLE1.fasta,SAMPLE2.fasta,..] [primer.bed] --proportions [0.8,0.2,..] --outdir [output_directory]
+mixamp simulate-proportions [SAMPLE1.fasta,SAMPLE2.fasta,..] [primer.bed] [reference.fasta] --proportions [0.8,0.2,..] --outdir [output_directory]
  ```
 
 Simulate reads from different samples without defining proportions (will be assigned randomly, proportions can be found in `results/sample_proportions.txt`) and allowing upto 2 SNPs mistmatches in the primer regions.
  ```
-mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --outdir results/ --maxmismatch 2
+mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed reference.fasta --outdir results/ --maxmismatch 2
  ```
 Simulate reads with user-defined proportions and specifing read simulator.
 Mixamp uses wgsim as a simulator but you can change it to mason.
  ```
-mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --simulator mason
+mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed reference.fasta --proportions 0.2,0.8 --simulator mason
  ```
 Simulate reads with user-defined proportions and number of reads per amplicon.
  ```
-mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 1000
+mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed reference.fasta --proportions 0.2,0.8 --readcnt 1000
  ```
 
 Simulate reads with additional parameters such as base error rate, read length and indels fraction
  ```
-mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed --proportions 0.2,0.8 --readcnt 1000 --error_rate 0.001 --read_length 400 --indel_fraction 0.001
+mixamp simulate-proportions sample.fasta,sample2.fasta primer.bed reference.fasta --proportions 0.2,0.8 --readcnt 1000 --error_rate 0.001 --read_length 400 --indel_fraction 0.001
  ```
 ## Notes
 #### Number of reads per amplicon
