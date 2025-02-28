@@ -14,6 +14,7 @@ def cli():
 @cli.command()
 @click.argument("genomes", type=str)
 @click.argument("primers", type=click.Path(exists=True))
+@click.argument("reference", type=click.Path(exists=True))
 @click.option(
     "--proportions",
     default="NA",
@@ -100,6 +101,7 @@ def cli():
 def simulate_proportions(
     genomes,
     proportions,
+    reference,
     primers,
     outdir,
     read_length,
@@ -151,7 +153,7 @@ def simulate_proportions(
         proportions = list(map(float, str(proportions).split(",")))
 
     print("Reading and preprocessing the primer file...")
-    df = preprocess_primers(primers)
+    df = preprocess_primers(primers,reference)
 
     if len(sample_names) != len(proportions) != len(sample_paths):
         raise Exception("Number of samples and proportions should match!")
