@@ -6,7 +6,7 @@ PYTHON ?= python
 all: ;
 
 lint:
-	flake8 freyja
+	flake8 mixamp
 
 test: all
 	py.test
