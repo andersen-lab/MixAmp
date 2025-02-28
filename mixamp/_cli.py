@@ -38,7 +38,8 @@ def cli():
     help="Select the simulator to use (wgsim or mason)",
 )
 @click.option(
-    "--outerdistance", default=150, help="Outer distance for simulation using wgsim"
+    "--outerdistance", default=150,
+    help="Outer distance for simulation using wgsim"
 )
 @click.option("--seed", default=None, type=int, help="seed for simulation")
 @click.option("--readcnt", default=500, help="Number of reads per amplicon")
@@ -48,14 +49,16 @@ def cli():
     default=0.004,
     type=float,
     show_default=True,
-    help="Base error rate (e.g., 0.02) for simulation using both wgsim and mason",
+    help="Base error rate (e.g., 0.02)"
+    " for simulation using both wgsim and mason",
 )
 @click.option(
     "--mean_quality_begin",
     default=40,
     type=float,
     show_default=True,
-    help="Mean sequence quality in beginning of the read for mason simulator only",
+    help="Mean sequence quality in beginning"
+    " of the read for mason simulator only",
 )
 @click.option(
     "--mean_quality_end",
@@ -84,7 +87,8 @@ def cli():
     default=0.00005,
     type=float,
     show_default=True,
-    help="Probability an indel is extended (e.g., 0.3) for simulation for wgsim",
+    help="Probability an indel is extended"
+    " (e.g., 0.3)for simulation for wgsim",
 )
 @click.option(
     "--maxmismatch",
@@ -134,26 +138,30 @@ def simulate_proportions(
     else:
         os.makedirs(outdir)
         print(f"Simulated results will be located at:'{outdir}'.")
-    sample_names = [fp.split("/")[-1].split(".")[0] for fp in str(genomes).split(",")]
+    sample_names = [fp.split("/")[-1].split(".")[0]
+                    for fp in str(genomes).split(",")]
     sample_paths = str(genomes).split(",")
 
     if proportions == "NA":
         if len(sample_names) == 1:
-            print("Only one sample provided. Using 1.0 as the sample proportion.")
+            print("Only one sample provided."
+                  "Using 1.0 as the sample proportion.")
             proportions = [1]
         else:
             print(
-                "Read simulation proportions not provided. Generating proportions randomly..."
+                "Read simulation proportions not"
+                "provided. Generating proportions randomly..."
             )
             proportions = generate_random_values(len(sample_names))
-            with open(os.path.join(outdir, "sample_proportions.txt"), "w") as file:
+            with open(os.path.join(outdir, "sample_proportions.txt"),
+                      "w") as file:
                 for name, proportion in zip(sample_names, proportions):
                     file.write(f"{name}: {proportion}\n")
     else:
         proportions = list(map(float, str(proportions).split(",")))
 
     print("Reading and preprocessing the primer file...")
-    df = preprocess_primers(primers,reference)
+    df = preprocess_primers(primers, reference)
 
     if len(sample_names) != len(proportions) != len(sample_paths):
         raise Exception("Number of samples and proportions should match!")
@@ -203,12 +211,15 @@ def simulate_proportions(
                 axis=1,
             )
 
-            all_amplicons["amplicon_suffix"] = all_amplicons["amplicon_number"].apply(
+            all_amplicons["amplicon_suffix"] = \
+                all_amplicons["amplicon_number"].apply(
                 lambda x: x.split("_")[0] if "_" in x else x
             )
-            for amplicon_number, group in all_amplicons.groupby("amplicon_suffix"):
+            for amplicon_number, group in all_amplicons.groupby(
+                    "amplicon_suffix"):
                 fasta_file = write_fasta_group(
-                    group, amplicon_number, os.path.join(outdir, name, "amplicons")
+                    group, amplicon_number, os.path.join(
+                        outdir, name, "amplicons")
                 )
 
             print("Starting read simulation...")
@@ -245,8 +256,10 @@ def simulate_proportions(
                 os.path.abspath(outdir), name, "reads/merged_reads_2.fastq"
             )
 
-            output_path1 = os.path.join(os.path.abspath(outdir), "reads_1.fastq")
-            output_path2 = os.path.join(os.path.abspath(outdir), "reads_2.fastq")
+            output_path1 = os.path.join(
+                os.path.abspath(outdir), "reads_1.fastq")
+            output_path2 = os.path.join(
+                os.path.abspath(outdir), "reads_2.fastq")
             print("Merging all reads...")
             merge_fastq_files(read_path1, output_path1)
             merge_fastq_files(read_path2, output_path2)

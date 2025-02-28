@@ -9,6 +9,7 @@ import itertools
 import numpy as np
 import regex as re
 
+
 def extract_sequence(reference, chrom, start, end):
     """Extracts sequence from reference based on coordinates and strand."""
     reference = next(SeqIO.parse(reference, "fasta"))
@@ -35,12 +36,14 @@ def validate_primer_bed(df):
     # Check column count
     if df.shape[1] < 6 or df.shape[1] > 7:
         raise ValueError(
-            "DataFrame must have 6 or 7 columns. Please refer to example primer file."
+            "DataFrame must have 6 or 7"
+            " columns. Please refer to example primer file."
         )
 
     # Check column types
     if not all(isinstance(df.iloc[i, 0], str) for i in range(len(df))):
-        raise ValueError("First column must contain only strings.(Chromosome name)")
+        raise ValueError(
+            "First column must contain only strings.(Chromosome name)")
 
     if not pd.api.types.is_numeric_dtype(df.iloc[:, 1]):
         raise ValueError("Second column must be numeric.(Primer start)")
@@ -58,18 +61,23 @@ def validate_primer_bed(df):
     pattern = re.compile(r"^[\w-]+_\d+_(LEFT|RIGHT)(?:_.*)?$")
 
     # Strip any leading/trailing spaces and ensure the values are strings
-    if not all(isinstance(val, str) and pattern.match(val.strip()) for val in df.iloc[:, 3]):
+    if not all(
+        isinstance(val, str) and
+            pattern.match(val.strip()) for val in df.iloc[:, 3]
+    ):
         raise ValueError(
-        "Fourth column format is incorrect."
-        " Expected 'string_number_LEFT/RIGHT' with possible extra characters"
-        " at the end indicating whether the primer is alternative."
-    )
+            "Fourth column format is incorrect."
+            " Expected 'string_number_LEFT/RIGHT'"
+            " with possible extra characters"
+            " at the end indicating whether the primer is alternative."
+        )
 
     if not pd.api.types.is_numeric_dtype(df.iloc[:, 4]):
         raise ValueError("Fifth column must be numeric.(strand +/-)")
 
     if not all(isinstance(df.iloc[i, 5], str) for i in range(len(df))):
-        raise ValueError("Sixth column must contain only strings.(Primer sequence)")
+        raise ValueError(
+            "Sixth column must contain only strings.(Primer sequence)")
     return df
 
 
@@ -120,7 +128,8 @@ def create_valid_primer_combinations(df):
 
     # Check if we found any valid primers
     if not valid_primers:
-        raise ValueError("No primer matches found, please check your primer file.")
+        raise ValueError(
+            "No primer matches found, please check your primer file.")
 
     # Convert collected data to DataFrame efficiently
     valid_primers_df = pd.DataFrame.from_records(valid_primers)
@@ -135,7 +144,7 @@ def create_valid_primer_combinations(df):
     return all_amplicons
 
 
-def preprocess_primers(primer_file,reference):
+def preprocess_primers(primer_file, reference):
     # define column names to read primers bed file
     col_names = [
         "ref",
@@ -150,11 +159,13 @@ def preprocess_primers(primer_file,reference):
     primer_bed = pd.read_csv(primer_file, sep="\t", names=col_names)
     primer_bed = validate_primer_bed(primer_bed)
     primer_bed["primer_seq"] = primer_bed.apply(
-            lambda row: extract_sequence(reference, row["ref"], row["start"], row["end"]),
-            axis=1
+        lambda row: extract_sequence(
+            reference, row["ref"], row["start"], row["end"]),
+        axis=1,
     )
     # split the amplicon name into number and left/right
-    primer_bed["amplicon_number"] = primer_bed["left_right"].str.split("_").str[1]
+    primer_bed["amplicon_number"] = primer_bed["left_right"].str.split(
+        "_").str[1]
     # merge the df with itself to have right and left primer on one row
     df = pd.merge(
         primer_bed.loc[primer_bed["left_right"].str.contains("LEFT")],
@@ -218,9 +229,9 @@ def run_simulation_on_fasta(
     merged_output1 = os.path.join(output_dir, "merged_reads_1.fastq")
     merged_output2 = os.path.join(output_dir, "merged_reads_2.fastq")
 
-    # Initialize merged output files
-    with open(merged_output1, "a") as f1, open(merged_output2, "a") as f2:
-        pass  # This creates empty files
+    # Initialize merged output files (if not already created)
+    open(merged_output1, "a").close()  # Create or append empty file
+    open(merged_output2, "a").close()  # Create or append empty file
 
     # Loop through the contigs and run wgsim for each
     for contig_idx in range(num_contigs):
@@ -298,17 +309,20 @@ def run_simulation_on_fasta(
 
         # Run the simulator command and capture any errors
         try:
-            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            subprocess.run(
+                command, check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as e:
             print(f"An error occurred while running the command: {e}")
         # Merge the contig-specific output into the final merged output files
-        command_merge = f'cat "{output1}" >> "{merged_output1}" && cat "{output2}" >> "{merged_output2}"'
+        command_merge = f'cat "{output1}" >> "{merged_output1}" \
+            && cat "{output2}" >> "{merged_output2}"'
         subprocess.call(command_merge, shell=True)
 
 
 def find_closest_primer_match(pattern, reference_seq, maxmismatch):
     """function to find a string allowing up to 1 mismatches"""
-    # Define the fuzzy regex pattern with a maximum number of mismatches (substitutions)
+    # Define the fuzzy regex pattern with a maximum number of mismatches
+    # (substitutions)
     primer_pattern = f"({pattern}){{s<={maxmismatch}}}"
 
     matches = [
@@ -316,7 +330,8 @@ def find_closest_primer_match(pattern, reference_seq, maxmismatch):
         for match in re.finditer(primer_pattern, reference_seq, re.IGNORECASE)
     ]
 
-    # if the primer not found, try finding it in the complimentary reverse strand
+    # if the primer not found, try finding it in the complimentary reverse
+    # strand
     if len(matches) == 0:
         matches = [
             match.start()
@@ -341,20 +356,25 @@ def make_amplicon(left_primer_loc, right_primer_loc, primer_seq_y, reference):
     else:
         amplicon = str(
             reference[
-                int(left_primer_loc - 1) : int(right_primer_loc + len(primer_seq_y))
+                int(left_primer_loc - 1):
+                int(right_primer_loc + len(primer_seq_y))
             ]
         )
     return amplicon
 
 
 def evaluate_matches(left_primer_coordinates, right_primer_coordinates):
-    """function to evaluate which coordinates found for each primer makes a valid amplicon"""
+    """function to evaluate which coordinates
+    found for each primer makes a valid amplicon"""
     # if both left and right primer string matches exist,
     # find left and right primer pairs that can create an amplicon
-    if len(left_primer_coordinates) != 0 and len(right_primer_coordinates) != 0:
+    if len(left_primer_coordinates) != 0 and len(
+            right_primer_coordinates) != 0:
         valid_combinations = []
         combinations = list(
-            itertools.product(left_primer_coordinates, right_primer_coordinates)
+            itertools.product(
+                left_primer_coordinates,
+                right_primer_coordinates)
         )
         for combination in combinations:
             amplicon_length = combination[1] - combination[0]
@@ -368,7 +388,8 @@ def evaluate_matches(left_primer_coordinates, right_primer_coordinates):
 
 
 def write_fasta_group(group, amplicon_number, output_dir):
-    fasta_filename = os.path.join(output_dir, f"amplicon_{amplicon_number}.fasta")
+    fasta_filename = os.path.join(
+        output_dir, f"amplicon_{amplicon_number}.fasta")
 
     filtered_records = [
         SeqRecord(Seq(seq), id=f"{amplicon_number}_{i}", description="")
@@ -380,6 +401,7 @@ def write_fasta_group(group, amplicon_number, output_dir):
         SeqIO.write(filtered_records, fasta_filename, "fasta")
     else:
         print(
-            f"No valid sequences for amplicon {amplicon_number}, no file written.\
-             please checkout the amplicon_stats.csv file for more information."
+            f"No valid sequences for amplicon {amplicon_number},"
+            "no file written.please checkout the amplicon_stats.csv "
+            "file for more information."
         )
