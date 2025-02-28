@@ -9,6 +9,15 @@ import itertools
 import numpy as np
 import regex as re
 
+def extract_sequence(reference, chrom, start, end):
+    """Extracts sequence from reference based on coordinates and strand."""
+    reference = next(SeqIO.parse(reference, "fasta"))
+    if reference.id not in chrom:
+        raise ValueError(f"Chromosome {chrom} not found in reference.")
+    seq = reference.seq[start:end]  # Extract sequence
+    return str(seq)
+
+
 def validate_primer_bed(df):
     """
     Validates a DataFrame representing a primer BED file.
@@ -38,7 +47,6 @@ def validate_primer_bed(df):
 
     if not pd.api.types.is_numeric_dtype(df.iloc[:, 2]):
         raise ValueError("Third column must be numeric.(Primer end)")
-
     # Check that third column is greater than second column
     if not (df.iloc[:, 2] > df.iloc[:, 1]).all():
         raise ValueError(
@@ -127,7 +135,7 @@ def create_valid_primer_combinations(df):
     return all_amplicons
 
 
-def preprocess_primers(primer_file):
+def preprocess_primers(primer_file,reference):
     # define column names to read primers bed file
     col_names = [
         "ref",
@@ -141,6 +149,10 @@ def preprocess_primers(primer_file):
     # read the primer bed file
     primer_bed = pd.read_csv(primer_file, sep="\t", names=col_names)
     primer_bed = validate_primer_bed(primer_bed)
+    primer_bed["primer_seq"] = primer_bed.apply(
+            lambda row: extract_sequence(reference, row["ref"], row["start"], row["end"]),
+            axis=1
+    )
     # split the amplicon name into number and left/right
     primer_bed["amplicon_number"] = primer_bed["left_right"].str.split("_").str[1]
     # merge the df with itself to have right and left primer on one row
