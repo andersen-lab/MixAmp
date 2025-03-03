@@ -181,7 +181,7 @@ def simulate_proportions(
             )
             df["right_primer_loc"] = df.apply(
                 lambda row: find_closest_primer_match(
-                    str(row["comp_rev"]), str(genome_seq.seq), maxmismatch
+                    str(row["primer_seq_y"]), str(genome_seq.seq), maxmismatch
                 ),
                 axis=1,
             )
