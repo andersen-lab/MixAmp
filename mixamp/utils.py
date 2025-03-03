@@ -174,10 +174,6 @@ def preprocess_primers(primer_file, reference):
     )
     # select needed columns
     df = df[["amplicon_number", "primer_seq_x", "primer_seq_y"]]
-    # get complementary reverse sequence of the right primer
-    df["comp_rev"] = df.apply(
-        lambda row: Seq(row["primer_seq_y"]).reverse_complement(), axis=1
-    )
     mask = df.duplicated(subset=["amplicon_number"], keep=False)
     # Apply a function to append an index for duplicated amplicon_number values
     df.loc[mask, "amplicon_number"] = (
