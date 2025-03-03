@@ -9,7 +9,7 @@ lint:
 	flake8 mixamp
 
 test: all
-	py.test
+	pytest
 
 test-install: all
 	# ensure the package is installed and the app is buildable. this test
@@ -19,8 +19,7 @@ test-install: all
 	python -c "import mixamp"
 
 test-cov: all
-	py.test --cov=mixamp
-	coveralls
+	pytest --cov=mixamp
 
 install: all
 	$(PYTHON) setup.py install
